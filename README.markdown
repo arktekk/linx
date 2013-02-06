@@ -13,7 +13,9 @@ Linx has no dependencies and is currently cross compiled from 2.8.0 to 2.10.0
 	val Pets   = Root / "people" / * / "pets"
 	val Pet    = Root / "people" / * / "pets" / *
 
-Everything is immutable, so if you prefer a more terse style you can safely build on previous links to create new ones. This is exactly the same as the previous example
+Everything is immutable, so if you prefer a more terse style you can safely build on previous links to create new ones.
+This is exactly the same as the previous example.
+(This style can be very useful when providing fallbacks)
 
 	val People = Root / "people"
 	val Person = People / *
@@ -39,19 +41,15 @@ And for pattern matching
 	}
 
 	"/people/personA" match {
-	  case Person(person) =>
-	    // person == "personA"
+	  case Person("personA") => // matches
 	}
 
 	"/people/personA/pets" match {
-	  case Pets(person) =>
-	    // person == "personA"
+	  case Pets("personA") => // matches
 	}
 
 	"/people/personA/pets/petB" match {
-	  case Pet(person, pet) =>
-	    // person == "personA"
-	    // pet == "petB"
+	  case Pet("personA", "petB") => // matches
 	}	
 
 Applying a link with the wrong number of arguments will fail at compile time
@@ -120,3 +118,11 @@ Here is an example showing how to do use Linx for both matching and creating lin
 
       unfiltered.jetty.Http(8080).plan(this).run()
     }
+
+
+## Unions
+
+## TODO
+toString
+
+

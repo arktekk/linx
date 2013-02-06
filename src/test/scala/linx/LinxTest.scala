@@ -77,4 +77,52 @@ class LinxTest {
     assertEquals(None, A.unapply("/A/B"))
     assertEquals(None, A.unapply("/B/A/C"))
   }
+
+  @Test
+  def literalComposite {
+    val AB = Root / "A" | Root / "B"
+    assertEquals(AB(), "/A")
+    val AB() = "/A"
+    val AB() = "/B"
+  }
+
+  @Test
+  def variableComposite {
+    val AB = Root / * / "A" | Root / "A" / *
+    assertEquals(AB("B"), "/B/A")
+    val AB("B") = "/B/A"
+    val AB("B") = "/A/B"
+  }
+
+  @Test
+  def literalOnUnion {
+    val ABC = (Root / * / "A" | Root / "A" / *) / "C"
+    assertEquals(ABC("B"), "/B/A/C")
+    val ABC("B") = "/B/A/C"
+    val ABC("B") = "/A/B/C"
+  }
+
+  @Test
+  def variableOnUnion {
+    val ABX = (Root / * / "A" | Root / "A" / *) / *
+    assertEquals(ABX("X", "Y"), "/X/A/Y")
+    val ABX("X", "Y") = "/X/A/Y"
+    val ABX("X", "Y") = "/A/X/Y"
+  }
+
+  @Test
+  def unionsInUnions {
+    val ABX = (Root / * / "A" | Root / "A" / *) / *
+    val BYZ = (Root / "Y" / "Y" / "Y" / * | Root / "Y" / *) / "Z" / * / "Z"
+    val XXX = (ABX | BYZ) / "U" / *
+    assertEquals(XXX("x", "y", "z"), "/x/A/y/U/z")
+    val XXX("x", "y", "z") = "/x/A/y/U/z"
+    val XXX("x", "y", "z") = "/A/x/y/U/z"
+  }
+
+  @Test
+  def unionBacktracking {
+    val X = (Root | Root / "a") / *
+    val X("b") = "/a/b"
+  }
 }
