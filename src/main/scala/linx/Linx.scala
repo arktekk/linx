@@ -1,8 +1,10 @@
 package linx
 
-object *
+object Root extends Static(Vector.empty)
 
-object Root extends Literal(Vector.empty)
+sealed trait Part
+case class Literal(name:String) extends Part
+case class Var(name:String) extends Part
 
 sealed trait Linx[A, X] {
   def split(s:String) = s.split('/').toList match {
@@ -14,8 +16,8 @@ sealed trait Linx[A, X] {
 
   def links(a:A) = elements(a).map(_.mkString("/", "/", ""))
 
-  def / [B](star: *.type)(implicit param:LinxParam[A, B]):Linx[B, Option[B]] =
-    new Variable(this, param, Vector.empty)
+  def / [B](s:Symbol)(implicit param:LinxParam[A, B]):Linx[B, Option[B]] =
+    new Variable(this, param, Vector.empty, s)
 
   def | (or:Linx[A, X])(implicit matcher:UnapplyMatch[X]):Linx[A, X] =
     new Union(this, or, matcher)
@@ -27,32 +29,52 @@ sealed trait Linx[A, X] {
   def extract(seq:List[String]):Stream[(A, List[String])]
 
   def unapply(s:String):X
+
+  def parts:Stream[Vector[Part]]
+
+  def templates(render:String => String) =
+    parts.map(_.map {
+      case Literal(l) => l
+      case Var(v) => render(v)
+    }.mkString("/", "/", ""))
+
+  def template(render:String => String) = templates(render).head
+
+  // uri template
+  override def toString = toStrings.head
+
+  // uri templates
+  def toStrings = templates("{"+_+"}")
 }
 
-class Literal(literal:Vector[String]) extends Linx[Unit, Boolean]{
+class Static(val static:Vector[String]) extends Linx[Unit, Boolean]{
   def unapply(s:String) = extract(split(s)).exists(_._2.isEmpty)
 
-  def /(name: String) = new Literal(literal :+ name)
+  def /(name: String) = new Static(static :+ name)
 
-  def elements(a: Unit) = Stream(literal)
+  def elements(a: Unit) = Stream(static)
 
   def extract(seq: List[String]) =
-    if (seq.startsWith(literal)) Stream(((), seq.drop(literal.size))) else Stream.empty
+    if (seq.startsWith(static)) Stream(((), seq.drop(static.size))) else Stream.empty
+
+  def parts = Stream(static.map(Literal(_)))
 }
 
-class Variable[P, A](parent:Linx[P, _], param:LinxParam[P, A], literal:Vector[String]) extends Linx[A, Option[A]]{
-  def /(name: String) = new Variable(parent, param, literal :+ name)
+class Variable[P, A](parent:Linx[P, _], param:LinxParam[P, A], static:Vector[String], symbol:Symbol) extends Linx[A, Option[A]]{
+  def /(name: String) = new Variable(parent, param, static :+ name, symbol)
 
   def elements(a: A) = {
     val (p, part) = param.previous(a)
-    parent.elements(p).map(v => v ++ (part +: literal))
+    parent.elements(p).map(_ ++ (part +: static))
   }
 
   def extract(seq: List[String]) = for {
-    (p, head :: tail) <- parent.extract(seq) if tail.startsWith(literal)
-  } yield (param.next(p, head), tail.drop(literal.size))
+    (p, head :: tail) <- parent.extract(seq) if tail.startsWith(static)
+  } yield (param.next(p, head), tail.drop(static.size))
 
   def unapply(s:String) = (for { (a, Nil) <- extract(split(s)) } yield a).headOption
+
+  def parts = parent.parts.map(_ ++ (Var(symbol.name) +: static.map(Literal(_))))
 }
 
 class Union[A, X](first:Linx[A, X], next:Linx[A, X], matcher:UnapplyMatch[X]) extends Linx[A, X]{
@@ -67,6 +89,8 @@ class Union[A, X](first:Linx[A, X], next:Linx[A, X], matcher:UnapplyMatch[X]) ex
     val firstX = first.unapply(s)
     if(matcher.is(firstX)) firstX else next.unapply(s)
   }
+
+  def parts = first.parts #::: next.parts
 }
 
 sealed case class UnapplyMatch[X](is:X => Boolean)
