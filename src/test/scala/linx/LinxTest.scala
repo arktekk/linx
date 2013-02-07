@@ -125,4 +125,40 @@ class LinxTest {
     val X = (Root | Root / "a") / 'b
     val X("b") = "/a/b"
   }
+
+  @Test
+  def parts {
+    val X = (Root / "a" / 'a | Root / 'a / "a") / "x" / 'x
+    assertEquals(X.parts, Stream(
+      Vector(Literal("a"), Var("a"), Literal("x"), Var("x")),
+      Vector(Var("a"), Literal("a"), Literal("x"), Var("x"))))
+  }
+
+  @Test
+  def toStrings {
+    val X = (Root / "a" / 'a | Root / 'a / "a") / "x" / 'x
+    assertEquals(X.toStrings, Stream(
+      "/a/{a}/x/{x}", "/{a}/a/x/{x}"))
+  }
+
+  @Test
+  def checkToString {
+    val X = (Root / "a" / 'a | Root / 'a / "a") / "x" / 'x
+    assertEquals(X.toString, "/a/{a}/x/{x}")
+  }
+
+  @Test
+  def templates {
+    val X = (Root / "a" / 'a | Root / 'a / "a") / "x" / 'x
+    def rails(s:String) = ":"+s
+    assertEquals(X.templates(rails), Stream(
+      "/a/:a/x/:x", "/:a/a/x/:x"))
+  }
+
+  @Test
+  def template = {
+    val X = (Root / "a" / 'a | Root / 'a / "a") / "x" / 'x
+    def rails(s:String) = ":"+s
+    assertEquals(X.template(rails), "/a/:a/x/:x")
+  }
 }

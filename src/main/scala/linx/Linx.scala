@@ -32,19 +32,20 @@ sealed trait Linx[A, X] {
 
   def parts:Stream[Vector[Part]]
 
-  def templates(render:String => String) =
+  def templates(render:String => String):Stream[String] =
     parts.map(_.map {
       case Literal(l) => l
       case Var(v) => render(v)
     }.mkString("/", "/", ""))
 
-  def template(render:String => String) = templates(render).head
+  def template(render:String => String):String =
+    templates(render).head
 
   // uri template
   override def toString = toStrings.head
 
   // uri templates
-  def toStrings = templates("{"+_+"}")
+  def toStrings:Stream[String] = templates("{"+_+"}")
 }
 
 class Static(val static:Vector[String]) extends Linx[Unit, Boolean]{
