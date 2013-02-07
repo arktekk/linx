@@ -135,13 +135,6 @@ class LinxTest {
   }
 
   @Test
-  def toStrings {
-    val X = (Root / "a" / 'a | Root / 'a / "a") / "x" / 'x
-    assertEquals(X.toStrings, Stream(
-      "/a/{a}/x/{x}", "/{a}/a/x/{x}"))
-  }
-
-  @Test
   def checkToString {
     val X = (Root / "a" / 'a | Root / 'a / "a") / "x" / 'x
     assertEquals(X.toString, "/a/{a}/x/{x}")

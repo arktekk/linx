@@ -7,6 +7,7 @@ Provide a simple and typesafe link representation
 * allow you to build typesafe links
 * use links as functions and extractors of its variable parts
 * provide a strategy for evolving your links (useful for public apis)
+* render templated versions of your links (e.g "/statuses/retweets/:id")
 
 ### what it does not
 * provide a complete representation for url/uri

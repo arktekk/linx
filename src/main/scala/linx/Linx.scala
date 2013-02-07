@@ -1,6 +1,6 @@
 package linx
 
-object Root extends Static(Vector.empty)
+object Root extends StaticLinx(Vector.empty)
 
 sealed trait Part
 case class Literal(name:String) extends Part
@@ -17,10 +17,10 @@ sealed trait Linx[A, X] {
   def links(a:A) = elements(a).map(_.mkString("/", "/", ""))
 
   def / [B](s:Symbol)(implicit param:LinxParam[A, B]):Linx[B, Option[B]] =
-    new Variable(this, param, Vector.empty, s)
+    new VariableLinx(this, param, Vector.empty, s)
 
   def | (or:Linx[A, X])(implicit matcher:UnapplyMatch[X]):Linx[A, X] =
-    new Union(this, or, matcher)
+    new UnionLinx(this, or, matcher)
 
   def / (name:String):Linx[A, X]
 
@@ -41,17 +41,14 @@ sealed trait Linx[A, X] {
   def template(render:String => String):String =
     templates(render).head
 
-  // uri template
-  override def toString = toStrings.head
-
-  // uri templates
-  def toStrings:Stream[String] = templates("{"+_+"}")
+  // rfc6570 uri template
+  override def toString = template("{" + _ + "}")
 }
 
-class Static(val static:Vector[String]) extends Linx[Unit, Boolean]{
+class StaticLinx(val static:Vector[String]) extends Linx[Unit, Boolean]{
   def unapply(s:String) = extract(split(s)).exists(_._2.isEmpty)
 
-  def /(name: String) = new Static(static :+ name)
+  def /(name: String) = new StaticLinx(static :+ name)
 
   def elements(a: Unit) = Stream(static)
 
@@ -61,8 +58,8 @@ class Static(val static:Vector[String]) extends Linx[Unit, Boolean]{
   def parts = Stream(static.map(Literal(_)))
 }
 
-class Variable[P, A](parent:Linx[P, _], param:LinxParam[P, A], static:Vector[String], symbol:Symbol) extends Linx[A, Option[A]]{
-  def /(name: String) = new Variable(parent, param, static :+ name, symbol)
+class VariableLinx[P, A](parent:Linx[P, _], param:LinxParam[P, A], static:Vector[String], symbol:Symbol) extends Linx[A, Option[A]]{
+  def /(name: String) = new VariableLinx(parent, param, static :+ name, symbol)
 
   def elements(a: A) = {
     val (p, part) = param.previous(a)
@@ -78,8 +75,8 @@ class Variable[P, A](parent:Linx[P, _], param:LinxParam[P, A], static:Vector[Str
   def parts = parent.parts.map(_ ++ (Var(symbol.name) +: static.map(Literal(_))))
 }
 
-class Union[A, X](first:Linx[A, X], next:Linx[A, X], matcher:UnapplyMatch[X]) extends Linx[A, X]{
-  def /(name: String) = new Union(first / name, next / name, matcher)
+class UnionLinx[A, X](first:Linx[A, X], next:Linx[A, X], matcher:UnapplyMatch[X]) extends Linx[A, X]{
+  def /(name: String) = new UnionLinx(first / name, next / name, matcher)
 
   def elements(a: A) = first.elements(a) #::: next.elements(a)
 
