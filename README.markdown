@@ -22,7 +22,7 @@ This does exactly the same as the previous example.
 	val Pets   = Person / "pets"
 	val Pet    = Pets / 'pet
 
-Your links can be used as functions
+## Your links are functions
 
 	Root()                 == "/"
 	People()               == "/people"
@@ -30,7 +30,7 @@ Your links can be used as functions
 	Pets("personA")        == "/people/personA/pets"
 	Pet("personA", "petB") == "/people/personA/pets/petB"
 
-And for pattern matching	
+## Pattern matching
 
 	"/" match {
 	  case Root() =>
@@ -117,7 +117,7 @@ Here is an example showing how to do use Linx for both matching and creating lin
 
 
 ## Alternatives / Evolving your api
-Lets say your application implements this api
+Lets say your application provides this api
 
 	val Persons = Root / "persons"
 	val Person  = Persons / 'person
@@ -125,31 +125,9 @@ Lets say your application implements this api
 	val Pet     = Pets / 'pet
 
 `"persons"` is poor english and you would like to change it to `"people"`
-Simply changing `"persons"` to "people" would break all clients that are hardcoded to your url structure.
-A friendlier alternative would be to support both versions, but that would lead to a lot of duplication in link definitions.
-Using something like Unfiltered that is based on pattern matching would also bring even more duplication for links with variables
-since you can't bind variables in alternative matches.
+Simply changing `"persons"` to "people" would break all clients that are hardcoded to your url structure, so how can we support these old resources without having to rewrite our entire application ?
 
-	val People  = Root / "people"
-	val Persons = Root / "persons"
-
-	val Person    = People / 'person
-	val PersonOLD = Persons / 'person
-
-	val Pets    = Person / "pets"
-	val PetsOLD = Person / "pets"
-
-	val Pet    = Pets / 'pet
-	val PetOLD = Pets / 'pet
-
-	// even more trouble
-	... match {
-	  case People() | Persons() => // alternative matches
-	  case Person(person) | PersonOLD(person) => // won't compile
-	}
-
-To solve this, Linx can compose link alternatives with the same number of variables
-You can add as many alternatives as you like
+To solve this, Linx can compose link alternatives as long as the links composed have the same number of variables.
 
 	val People = Root / "people" | Root / "persons"
 	val Person = People / 'person
@@ -168,16 +146,14 @@ and the Person, Pets and Pets links will all match correctly on links starting w
 	    case Pet(person, pet) => // matches
 	}
 	
-When using link alternatives using links as functions, they will always return the leftmost alternative which in this example will be `"/people"` etc.
+When using link alternatives as functions, they will always return the leftmost alternative, which in this example will be `"/people"` etc.
 
 If you need to retrieve all the available links you can call the `links` method
 
 	Pet.links("personA", "petB") == Stream("/people/personA/pets/petA", "/persons/personA/pets/petA")
 
 ## Templates
-Not everyone is ready for completely link driven apis yet. Pretty much every api
-out there have either exclusively or partly documented link structures for developers to code against (e.g twitter)
-As shown in the previous section, we can simplify supporting backwards compatible apis, but how do we document them ?
+Pretty much every api out there have documented link structures for developers to code against (e.g twitter)
 A common way of doing this is by showing all the links together with some documentation in a URL-template like way.
 
 Twitter uses :variable to represent a variable in its url templates

@@ -1,1 +1,0 @@
-Linx is a tiny library for creating simple and typesafe link/path representations
