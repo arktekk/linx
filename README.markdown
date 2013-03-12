@@ -4,7 +4,7 @@ Linx is a tiny and simple library for building and matching links/paths in a typ
 Links are built from the root up, consisting of literal and variable parts.
 A link can be used both as a function and as an extractor for pattern matching.
 
-Linx has no dependencies and cross compiles from 2.8.0 to 2.10.0
+Linx has no dependencies and cross compiles from 2.9.1-1 to 2.10.0
 
 	import linx._
 
@@ -22,7 +22,7 @@ This does exactly the same as the previous example.
 	val Pets   = Person / "pets"
 	val Pet    = Pets / 'pet
 
-## Your links are functions
+## links are functions
 
 	Root()                 == "/"
 	People()               == "/people"
@@ -30,7 +30,7 @@ This does exactly the same as the previous example.
 	Pets("personA")        == "/people/personA/pets"
 	Pet("personA", "petB") == "/people/personA/pets/petB"
 
-## Pattern matching
+## links are extractors (pattern matching)
 
 	"/" match {
 	  case Root() =>
