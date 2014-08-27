@@ -6,13 +6,25 @@ sealed trait Part
 case class Literal(name:String) extends Part
 case class Var(name:String) extends Part
 
+object Linx {
+  class VarOps[A, X](l:Linx[A, Option[X]]){
+    def apply(a:A) = l.links(a).head
+  }
+
+  implicit def VarOps[A, X](l:Linx[A, Option[X]]) = new VarOps[A, X](l)
+
+  class NoVarOps[X](l:Linx[Unit, X]){
+    def apply() = l.links(()).head
+  }
+
+  implicit def NoVarOps[X](l:Linx[Unit, X]) = new NoVarOps[X](l)
+}
+
 sealed trait Linx[A, X] {
   def split(s:String) = s.split('/').toList match {
     case "" :: t => t
     case t       => t
   }
-
-  def apply(a:A) = links(a).head
 
   def links(a:A) = elements(a).map(_.mkString("/", "/", ""))
 
@@ -55,7 +67,7 @@ class StaticLinx(val static:Vector[String]) extends Linx[Unit, Boolean]{
   def extract(seq: List[String]) =
     if (seq.startsWith(static)) Stream(((), seq.drop(static.size))) else Stream.empty
 
-  def parts = Stream(static.map(Literal(_)))
+  def parts = Stream(static.map(Literal))
 }
 
 class VariableLinx[P, A](parent:Linx[P, _], param:LinxParam[P, A], static:Vector[String], symbol:Symbol) extends Linx[A, Option[A]]{
@@ -72,7 +84,7 @@ class VariableLinx[P, A](parent:Linx[P, _], param:LinxParam[P, A], static:Vector
 
   def unapply(s:String) = (for { (a, Nil) <- extract(split(s)) } yield a).headOption
 
-  def parts = parent.parts.map(_ ++ (Var(symbol.name) +: static.map(Literal(_))))
+  def parts = parent.parts.map(_ ++ (Var(symbol.name) +: static.map(Literal)))
 }
 
 class UnionLinx[A, X](first:Linx[A, X], next:Linx[A, X], matcher:UnapplyMatch[X]) extends Linx[A, X]{
