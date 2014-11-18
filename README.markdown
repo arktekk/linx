@@ -4,7 +4,9 @@ Linx is a tiny and simple library for building and matching links/paths in a typ
 Links are built from the root up, consisting of literal and variable parts.
 A link can be used both as a function and as an extractor for pattern matching.
 
-Linx has no dependencies and cross compiles from 2.9.1-1 to 2.10.0
+Linx has no dependencies and is cross compiled for 2.10 and 2.11
+
+Latest version is 0.2 and is available from Maven Central as `"com.jteigen" %% "linx" % "0.2"`
 
 	import linx._
 
