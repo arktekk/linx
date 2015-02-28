@@ -21,10 +21,7 @@ object Linx {
 }
 
 sealed trait Linx[A, X] {
-  def split(s:String) = s.split('/').toList match {
-    case "" :: t => t
-    case t       => t
-  }
+  def split(s: String) = s.split("/").filterNot(_.isEmpty).toList
 
   def links(a:A) = elements(a).map(_.mkString("/", "/", ""))
 
@@ -60,7 +57,7 @@ sealed trait Linx[A, X] {
 class StaticLinx(val static:Vector[String]) extends Linx[Unit, Boolean]{
   def unapply(s:String) = extract(split(s)).exists(_._2.isEmpty)
 
-  def /(name: String) = new StaticLinx(static :+ name)
+  def /(name: String) = new StaticLinx(static ++ split(name))
 
   def elements(a: Unit) = Stream(static)
 
@@ -71,7 +68,7 @@ class StaticLinx(val static:Vector[String]) extends Linx[Unit, Boolean]{
 }
 
 class VariableLinx[P, A](parent:Linx[P, _], param:LinxParam[P, A], static:Vector[String], symbol:Symbol) extends Linx[A, Option[A]]{
-  def /(name: String) = new VariableLinx(parent, param, static :+ name, symbol)
+  def /(name: String) = new VariableLinx(parent, param, static ++ split(name), symbol)
 
   def elements(a: A) = {
     val (p, part) = param.previous(a)
