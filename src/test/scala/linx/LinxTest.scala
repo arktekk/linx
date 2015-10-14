@@ -154,4 +154,16 @@ class LinxTest {
     def rails(s:String) = ":"+s
     assertEquals(X.template(rails), "/a/:a/x/:x")
   }
+
+  @Test
+  def typed = {
+    val X = Root / 'a[Int] / 'b[Char] / 'c[String]
+    val X(a, b, c) = "/5/x/6"
+
+    assertEquals(5, a)
+    assertEquals('x', b)
+    assertEquals("6", c)
+
+    assertEquals(X(5, 'x', "6"), "/5/x/6")
+  }
 }
