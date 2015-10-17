@@ -59,7 +59,7 @@ sealed trait Linx[A, X] {
   override def toString = template("{" + _ + "}")
 }
 
-class StaticLinx[A](val static:Vector[String]) extends Linx[Unit, Boolean]{
+class StaticLinx(val static:Vector[String]) extends Linx[Unit, Boolean]{
   def unapply(s:String) = extract(split(s)).exists(_._2.isEmpty)
 
   def /(name: String) = new StaticLinx(static :+ name)
