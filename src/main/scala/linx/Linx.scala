@@ -1,5 +1,7 @@
 package linx
 
+import scala.language.implicitConversions
+
 object Root extends StaticLinx(Vector.empty)
 
 sealed trait Part

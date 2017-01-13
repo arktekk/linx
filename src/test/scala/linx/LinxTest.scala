@@ -1,18 +1,18 @@
 package linx
 
-import org.junit.Test
-import org.junit.Assert._
+import org.scalatest._
 
-class LinxTest {
-  @Test
-  def empty{
+class LinxTest extends FunSuite {
+  def assertEquals[X](x: X, y: X) = assert(x === y)
+  def assertFalse(boolean: Boolean) = assert(!boolean)
+
+  test("empty") {
     val path = "/"
     assertEquals(Root(), path)
     val Root() = path
   }
 
-  @Test
-  def variable{
+  test("variable") {
     val X = Root / 'x
     val path = "/x"
     val X(x) = path
@@ -20,7 +20,7 @@ class LinxTest {
     assertEquals(X(x), path)
   }
 
-  def variableMulti{
+  test("variableMulti") {
     val X = Root / 'a / 'b / 'c
     val path = "/a/b/c"
     val X(a,b,c) = path
@@ -30,16 +30,14 @@ class LinxTest {
     assertEquals(path, X(a,b,c))
   }
 
-  @Test
-  def literal{
+  test("literal") {
     val X = Root / "A" / "B" / "C"
     val path = "/A/B/C"
     assertEquals(path, X())
     val X() = path
   }
 
-  @Test
-  def mixed{
+  test("mixed") {
     val X = Root / "A" / 'b / "C" / "D" / 'e / 'f / "G" / 'h / "I"
     val path = "/A/B/C/D/E/F/G/H/I"
     val X(b, e, f, h) = path
@@ -50,68 +48,59 @@ class LinxTest {
     assertEquals(path, X(b, e, f, h))
   }
 
-  @Test
-  def failRoot{
+  test("failRoot") {
     assertFalse(Root.unapply("/a"))
   }
 
-  @Test
-  def failLiteral{
+  test("failLiteral") {
     val A = Root / "A"
     assertFalse(A.unapply("/"))
     assertFalse(A.unapply("/B"))
     assertFalse(A.unapply("/A/B"))
   }
 
-  @Test
-  def failVariable{
+  test("failVariable") {
     val A = Root / 'a
     assertEquals(None, A.unapply("/"))
     assertEquals(None, A.unapply("/A/B"))
   }
 
-  @Test
-  def failMixed{
+  test("failMixed") {
     val A = Root / 'unknown / "A"
     assertEquals(None, A.unapply("/"))
     assertEquals(None, A.unapply("/A/B"))
     assertEquals(None, A.unapply("/B/A/C"))
   }
 
-  @Test
-  def literalComposite {
+  test("literalComposite") {
     val AB = Root / "A" | Root / "B"
     assertEquals(AB(), "/A")
     val AB() = "/A"
     val AB() = "/B"
   }
 
-  @Test
-  def variableComposite {
+  test("variableComposite") {
     val AB = Root / 'b / "A" | Root / "A" / 'b
     assertEquals(AB("B"), "/B/A")
     val AB("B") = "/B/A"
     val AB("B") = "/A/B"
   }
 
-  @Test
-  def literalOnUnion {
+  test("literalOnUnion") {
     val ABC = (Root / 'b / "A" | Root / "A" / 'b) / "C"
     assertEquals(ABC("B"), "/B/A/C")
     val ABC("B") = "/B/A/C"
     val ABC("B") = "/A/B/C"
   }
 
-  @Test
-  def variableOnUnion {
+  test("variableOnUnion") {
     val ABX = (Root / 'x / "A" | Root / "A" / 'x) / 'y
     assertEquals(ABX("X", "Y"), "/X/A/Y")
     val ABX("X", "Y") = "/X/A/Y"
     val ABX("X", "Y") = "/A/X/Y"
   }
 
-  @Test
-  def unionsInUnions {
+  test("unionsInUnions") {
     val ABX = (Root / 'x / "A" | Root / "A" / 'x) / 'y
     val BYZ = (Root / "Y" / "Y" / "Y" / 'x | Root / "Y" / 'x) / "Z" / 'y / "Z"
     val XXX = (ABX | BYZ) / "U" / 'z
@@ -120,36 +109,31 @@ class LinxTest {
     val XXX("x", "y", "z") = "/A/x/y/U/z"
   }
 
-  @Test
-  def unionBacktracking {
+  test("unionBacktracking") {
     val X = (Root | Root / "a") / 'b
     val X("b") = "/a/b"
   }
 
-  @Test
-  def parts {
+  test("parts") {
     val X = (Root / "a" / 'a | Root / 'a / "a") / "x" / 'x
     assertEquals(X.parts, Stream(
       Vector(Literal("a"), Var("a"), Literal("x"), Var("x")),
       Vector(Var("a"), Literal("a"), Literal("x"), Var("x"))))
   }
 
-  @Test
-  def checkToString {
+  test("checkToString") {
     val X = (Root / "a" / 'a | Root / 'a / "a") / "x" / 'x
     assertEquals(X.toString, "/a/{a}/x/{x}")
   }
 
-  @Test
-  def templates {
+  test("templates") {
     val X = (Root / "a" / 'a | Root / 'a / "a") / "x" / 'x
     def rails(s:String) = ":"+s
     assertEquals(X.templates(rails), Stream(
       "/a/:a/x/:x", "/:a/a/x/:x"))
   }
 
-  @Test
-  def template = {
+  test("template") {
     val X = (Root / "a" / 'a | Root / 'a / "a") / "x" / 'x
     def rails(s:String) = ":"+s
     assertEquals(X.template(rails), "/a/:a/x/:x")
