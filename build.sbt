@@ -1,32 +1,28 @@
 import com.typesafe.sbt.pgp.PgpKeys
 
-releaseSettings
-
-ReleaseKeys.publishArtifactsAction := PgpKeys.publishSigned.value
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
 
 name := "linx"
 
 organization := "com.jteigen"
 
-scalaVersion := "2.11.4"
-
 description := "A simple and typesafe link representation"
 
-crossScalaVersions := Seq("2.10.4", "2.11.4")
+crossScalaVersions := Seq("2.12.1", "2.11.8", "2.10.6")
 
-javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
+scalaVersion := crossScalaVersions.value.head
 
-libraryDependencies ++= Seq(
-    "com.novocode" % "junit-interface" % "0.10-M2" % "test",
-    "junit" % "junit" % "4.11" % "test")
+scalacOptions ++= Seq("-feature", "-deprecation", "-encoding", "utf-8")
+
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1"
 
 licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
 
 publishMavenStyle := true
 
-publishTo <<= version { (v: String) =>
+publishTo := {
   val nexus = "https://oss.sonatype.org/"
-  if (v.trim.endsWith("SNAPSHOT"))
+  if ((version in ThisBuild).value.trim.endsWith("SNAPSHOT"))
     Some("snapshots" at nexus + "content/repositories/snapshots")
   else
     Some("releases"  at nexus + "service/local/staging/deploy/maven2")
