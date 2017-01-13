@@ -4,9 +4,9 @@ Linx is a tiny and simple library for building and matching links/paths in a typ
 Links are built from the root up, consisting of literal and variable parts.
 A link can be used both as a function and as an extractor for pattern matching.
 
-Linx has no dependencies and is cross compiled for 2.10 and 2.11
+Linx has no dependencies and is cross compiled for 2.10, 2.11 and 2.12
 
-Latest version is 0.2 and is available from Maven Central as `"com.jteigen" %% "linx" % "0.2"`
+Latest version is 0.3 and is available from Maven Central as `"com.jteigen" %% "linx" % "0.3"`
 
 	import linx._
 
@@ -52,7 +52,7 @@ This does exactly the same as the previous example.
 
 	"/people/personA/pets/petB" match {
 	  case Pet("personA", "petB") => // matches
-	}	
+	}
 
 The wrong number of arguments will fail at compile time
 
@@ -147,7 +147,7 @@ and the Person, Pets and Pets links will all match correctly on links starting w
 	"/persons/personA/pets/petA" match {
 	    case Pet(person, pet) => // matches
 	}
-	
+
 When using link alternatives as functions, they will always return the leftmost alternative, which in this example will be `"/people"` etc.
 
 If you need to retrieve all the available links you can call the `links` method
@@ -159,27 +159,27 @@ Pretty much every api out there have documented link structures for developers t
 A common way of doing this is by showing all the links together with some documentation in a URL-template like way.
 
 Twitter uses :variable to represent a variable in its url templates
-    
+
 	GET statuses/retweets/:id
 
 In Linx this will look like this
-    
+
 	val Retweets = Root / "statuses" / "retweets" / 'id
 
 To get a template for a link we need to provide a functions handling how a variable shoule be rendered
-    
+
 	def twitter(v:String) = ":" + v
     Retweets.template(twitter) == "/statuses/retweets/:id"
 
 If we want to render our variables in a different way we simply provide a different function to render the variables
-    
+
 	def rfc6570(v:String) = "{" + v + "}"
     Retweets.template(rfc6570) == "/statuses/retweets/{id}"
 
 
 Linx supports rendering multiple templates for links that have alternatives.
 Templates are rendered from left to right
-    
+
 	val People = Root / "people" | Root / "persons"
     val Person = People / 'person
     val Pets   = Person / "pets"
@@ -190,6 +190,6 @@ Templates are rendered from left to right
 
 ## ToString
 the toString method on Linx is overridden to provide a URI-template (rfc6570) compatible template
-    
+
 	override def toString = template("{" + _ + "}")
 
