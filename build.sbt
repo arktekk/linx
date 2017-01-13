@@ -4,7 +4,7 @@ releasePublishArtifactsAction := PgpKeys.publishSigned.value
 
 name := "linx"
 
-organization := "com.jteigen"
+organization := "no.arktekk"
 
 description := "A simple and typesafe link representation"
 
@@ -32,12 +32,12 @@ publishArtifact in Test := false
 
 pomIncludeRepository := { _ => false }
 
-homepage := Some(url("http://github.com/teigen/linx"))
+homepage := Some(url("http://github.com/arktekk/linx"))
 
 pomExtra := (
   <scm>
-    <url>git@github.com:teigen/linx.git</url>
-    <connection>scm:git:git@github.com:teigen/linx.git</connection>
+    <url>git@github.com:arktekk/linx.git</url>
+    <connection>scm:git:git@github.com:arktekk/linx.git</connection>
   </scm>
   <developers>
     <developer>
