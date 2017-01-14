@@ -138,4 +138,34 @@ class LinxTest extends FunSuite {
     def rails(s:String) = ":"+s
     assertEquals(X.template(rails), "/a/:a/x/:x")
   }
+
+  @Test
+  def lenientLiteral() = {
+    val X    = Root / "/A" / "B/C"
+    val path = "/A/B/C"
+    val X()  = path
+
+    assertEquals(path, X())
+  }
+
+  @Test
+  def lenientVariable() = {
+    val X    = Root / 'x / "//bar/baz///"
+    val path = "/foo/bar/baz"
+    val X(x) = path
+
+    assertEquals("foo", x)
+    assertEquals(X(x), path)
+  }
+
+  @Test
+  def lenientUnapply() = {
+    val X    = Root / 'x / "//bar/baz///"
+    val path = "/foo/bar/baz"
+    val X(x) = path.replaceAll("/", "//")
+
+    assertEquals("foo", x)
+    assertEquals(X(x), path)
+  }
+
 }
