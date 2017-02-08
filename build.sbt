@@ -1,48 +1,58 @@
 import com.typesafe.sbt.pgp.PgpKeys
 
-releasePublishArtifactsAction := PgpKeys.publishSigned.value
+crossScalaVersions  := Seq("2.12.1", "2.11.8", "2.10.6")
+scalaVersion        := crossScalaVersions.value.head
+scalacOptions      ++= Seq("-feature", "-deprecation", "-encoding", "utf-8")
 
-name := "linx"
+val noPublishSettings: Project => Project =
+  _.settings(
+    publish := {},
+    publishLocal := {}
+  )
 
-organization := "no.arktekk"
+val publishSettings: Project => Project =
+  _.settings(
+    publishTo := {
+      val nexus = "https://oss.sonatype.org/"
+      if ((version in ThisBuild).value.trim.endsWith("SNAPSHOT"))
+        Some("snapshots" at nexus + "content/repositories/snapshots")
+      else
+        Some("releases" at nexus + "service/local/staging/deploy/maven2")
+    },
+    publishMavenStyle := true,
+    publishArtifact in Test := false,
+    pomIncludeRepository := { _ => false },
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+    pomExtra :=
+      <scm>
+        <url>git@github.com:arktekk/linx.git</url>
+        <connection>scm:git:git@github.com:arktekk/linx.git</connection>
+      </scm>
+      <developers>
+        <developer>
+          <id>jteigen</id>
+          <name>Jon-Anders Teigen</name>
+          <url>http://jteigen.com</url>
+        </developer>
+      </developers>
+  )
 
-description := "A simple and typesafe link representation"
+lazy val linx =
+  crossProject
+    .in(file("."))
+    .settings(
+      organization        := "no.arktekk",
+      name                := "linx",
+      description         := "A simple and typesafe link representation",
+      homepage            := Some(url("http://github.com/arktekk/linx")),
+      licenses            := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.1" % Test
+    ).configureAll(publishSettings)
 
-crossScalaVersions := Seq("2.12.1", "2.11.8", "2.10.6")
+lazy val linxJVM = linx.jvm
+lazy val linxJS  = linx.js
 
-scalaVersion := crossScalaVersions.value.head
-
-scalacOptions ++= Seq("-feature", "-deprecation", "-encoding", "utf-8")
-
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1"
-
-licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
-
-publishMavenStyle := true
-
-publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  if ((version in ThisBuild).value.trim.endsWith("SNAPSHOT"))
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-}
-
-publishArtifact in Test := false
-
-pomIncludeRepository := { _ => false }
-
-homepage := Some(url("http://github.com/arktekk/linx"))
-
-pomExtra := (
-  <scm>
-    <url>git@github.com:arktekk/linx.git</url>
-    <connection>scm:git:git@github.com:arktekk/linx.git</connection>
-  </scm>
-  <developers>
-    <developer>
-      <id>jteigen</id>
-      <name>Jon-Anders Teigen</name>
-      <url>http://jteigen.com</url>
-    </developer>
-  </developers>)
+lazy val linxRoot = project
+  .in(file("root"))
+  .aggregate(linxJS, linxJVM)
+  .configure(noPublishSettings)
