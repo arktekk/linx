@@ -3,7 +3,10 @@ import com.typesafe.sbt.pgp.PgpKeys
 crossScalaVersions  := Seq("2.12.1", "2.11.8", "2.10.6")
 scalaVersion        := crossScalaVersions.value.head
 scalacOptions      ++= Seq("-feature", "-deprecation", "-encoding", "utf-8")
+
+//apologies for this hack, it was the only way i could make publishing work for now
 isSnapshot in ThisBuild := true
+
 publishTo in ThisBuild := {
   val nexus = "https://oss.sonatype.org/"
   if ((version in ThisBuild).value.trim.endsWith("SNAPSHOT"))

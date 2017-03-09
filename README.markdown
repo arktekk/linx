@@ -6,7 +6,8 @@ A link can be used both as a function and as an extractor for pattern matching.
 
 Linx has no dependencies and is cross compiled for 2.10, 2.11 and 2.12
 
-Latest version is 0.3 and is available from Maven Central as `"com.jteigen" %% "linx" % "0.3"`
+Latest version is 0.4 and is available from Maven Central as `"no.arktekk" %% "linx" % "0.4"`.
+For Scala.js, use `"no.arktekk" %%% "linx" % "0.4"`
 
 	import linx._
 
