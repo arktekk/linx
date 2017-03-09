@@ -3,6 +3,14 @@ import com.typesafe.sbt.pgp.PgpKeys
 crossScalaVersions  := Seq("2.12.1", "2.11.8", "2.10.6")
 scalaVersion        := crossScalaVersions.value.head
 scalacOptions      ++= Seq("-feature", "-deprecation", "-encoding", "utf-8")
+isSnapshot in ThisBuild := true
+publishTo in ThisBuild := {
+  val nexus = "https://oss.sonatype.org/"
+  if ((version in ThisBuild).value.trim.endsWith("SNAPSHOT"))
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases" at nexus + "service/local/staging/deploy/maven2")
+}
 
 val noPublishSettings: Project => Project =
   _.settings(
@@ -12,13 +20,7 @@ val noPublishSettings: Project => Project =
 
 val publishSettings: Project => Project =
   _.settings(
-    publishTo := {
-      val nexus = "https://oss.sonatype.org/"
-      if ((version in ThisBuild).value.trim.endsWith("SNAPSHOT"))
-        Some("snapshots" at nexus + "content/repositories/snapshots")
-      else
-        Some("releases" at nexus + "service/local/staging/deploy/maven2")
-    },
+
     publishMavenStyle := true,
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
