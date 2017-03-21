@@ -1,5 +1,7 @@
 package linx
 
+import java.net.URI
+
 import scala.language.implicitConversions
 
 object Root extends StaticLinx(Vector.empty)
@@ -53,6 +55,26 @@ sealed trait Linx[A, X] {
 
   def template(render:String => String):String =
     templates(render).head
+
+  def expandToURI(base: URI, render: String => String): URI = {
+    val addPath = template(render)
+    val scheme = Option(base.getScheme)
+    val host = Option(base.getHost)
+    val port = Option(base.getPort).filterNot(Set(0, -1).contains)
+    val path = Option(base.getPath)
+    val query = Option(base.getQuery)
+    val fragment = Option(base.getFragment)
+
+    URI.create(List(
+      scheme.map(_ + "://"),
+      host,
+      port.map(p => s":$p"),
+      path.map(s => if (s.endsWith("/")) s.stripSuffix("/") else s),
+      Some(addPath),
+      query.map("?" + _),
+      fragment.map("#" + _)
+    ).flatten.mkString)
+  }
 
   // rfc6570 uri template
   override def toString = template("{" + _ + "}")
