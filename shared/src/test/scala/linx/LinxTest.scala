@@ -214,4 +214,12 @@ class LinxTest extends FunSuite {
 
     assert(base.resolve("/context/foo/bar/baz/meh") === link.uri(base, ("baz", "meh")))
   }
+
+  test("Query params and parameters") {
+    val link = Root / "foo" / "bar" / 'baz / 'meh
+
+    val base = URI.create("/context?query=searchterm")
+
+    assert(URI.create("/context/foo/bar/baz/meh?query=searchterm") === link.uri(base, ("baz", "meh")))
+  }
 }
