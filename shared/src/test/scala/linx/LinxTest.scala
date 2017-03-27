@@ -1,5 +1,7 @@
 package linx
 
+import java.net.URI
+
 import org.scalatest._
 
 class LinxTest extends FunSuite {
@@ -163,5 +165,61 @@ class LinxTest extends FunSuite {
 
     assertEquals("foo", x)
     assertEquals(X(x), path)
+  }
+
+  test("uri http://example.com") {
+    val link = Root / "foo" / "bar" / "baz"
+
+    val base = URI.create("http://www.example.com")
+
+    assert(URI.create("http://www.example.com/foo/bar/baz") === link.uri(base))
+  }
+
+  test("uri local with port") {
+    val link = Root / "foo" / "bar" / "baz"
+
+    val base = URI.create("http://localhost:1349")
+
+    assert(URI.create("http://localhost:1349/foo/bar/baz") === link.uri(base))
+  }
+
+  test("uri local with port with base path") {
+    val link = Root / "foo" / "bar" / "baz"
+
+    val base = URI.create("http://localhost:1349/context")
+
+    assert(base.resolve("/context/foo/bar/baz") === link.uri(base))
+  }
+
+  test("Relative") {
+    val link = Root / "foo" / "bar" / "baz"
+
+    val base = URI.create("/context")
+
+    assert(base.resolve("/context/foo/bar/baz") === link.uri(base))
+  }
+
+  test("Parameterized") {
+    val link = Root / "foo" / "bar" / 'baz
+
+    val base = URI.create("/context")
+
+    assert(base.resolve("/context/foo/bar/baz") === link.uri(base, "baz"))
+  }
+
+  test("Parameterized multiple") {
+    val link = Root / "foo" / "bar" / 'baz / 'meh
+
+    val base = URI.create("/context")
+
+    assert(base.resolve("/context/foo/bar/baz/meh") === link.uri(base, ("baz", "meh")))
+  }
+
+  test("Query params and parameters") {
+    val link = Root / "foo" / "bar" / 'baz / 'meh
+
+    val base = URI.create("/context?query=searchterm")
+
+    assert(URI.create("/context/foo/bar/baz/meh?query=searchterm") === link.uri(base, ("baz", "meh")))
   }
 }
