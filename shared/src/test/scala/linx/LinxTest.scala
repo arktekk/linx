@@ -172,7 +172,7 @@ class LinxTest extends FunSuite {
 
     val base = URI.create("http://www.example.com")
 
-    assert(URI.create("http://www.example.com/foo/bar/baz") === link.expandToURI(base, identity))
+    assert(URI.create("http://www.example.com/foo/bar/baz") === link.uri(base))
   }
 
   test("uri local with port") {
@@ -180,7 +180,7 @@ class LinxTest extends FunSuite {
 
     val base = URI.create("http://localhost:1349")
 
-    assert(URI.create("http://localhost:1349/foo/bar/baz") === link.expandToURI(base, identity))
+    assert(URI.create("http://localhost:1349/foo/bar/baz") === link.uri(base))
   }
 
   test("uri local with port with base path") {
@@ -188,7 +188,7 @@ class LinxTest extends FunSuite {
 
     val base = URI.create("http://localhost:1349/context")
 
-    assert(base.resolve("/context/foo/bar/baz") === link.expandToURI(base, identity))
+    assert(base.resolve("/context/foo/bar/baz") === link.uri(base))
   }
 
   test("Relative") {
@@ -196,6 +196,6 @@ class LinxTest extends FunSuite {
 
     val base = URI.create("/context")
 
-    assert(base.resolve("/context/foo/bar/baz") === link.expandToURI(base, identity))
+    assert(base.resolve("/context/foo/bar/baz") === link.uri(base))
   }
 }

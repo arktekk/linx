@@ -11,14 +11,39 @@ case class Literal(name:String) extends Part
 case class Var(name:String) extends Part
 
 object Linx {
-  class VarOps[A, X](l:Linx[A, Option[X]]){
+
+  sealed trait UriOps {
+    protected def expandToUri(base: URI, addPath: String): URI = {
+      val scheme = Option(base.getScheme)
+      val host = Option(base.getHost)
+      val port = Option(base.getPort).filterNot(Set(0, -1).contains)
+      val path = Option(base.getPath)
+      val query = Option(base.getQuery)
+      val fragment = Option(base.getFragment)
+
+      URI.create(List(
+        scheme.map(_ + "://"),
+        host,
+        port.map(p => s":$p"),
+        path.map(s => if (s.endsWith("/")) s.stripSuffix("/") else s),
+        Some(addPath),
+        query.map("?" + _),
+        fragment.map("#" + _)
+      ).flatten.mkString)
+    }
+  }
+
+  class VarOps[A, X](l:Linx[A, Option[X]]) extends UriOps {
     def apply(a:A) = l.links(a).head
+
+    def uri(base: URI, a: A): URI = expandToUri(base, apply(a))
   }
 
   implicit def VarOps[A, X](l:Linx[A, Option[X]]) = new VarOps[A, X](l)
 
-  class NoVarOps[X](l:Linx[Unit, X]){
+  class NoVarOps[X](l:Linx[Unit, X]) extends UriOps {
     def apply() = l.links(()).head
+    def uri(base: URI) = expandToUri(base, apply())
   }
 
   implicit def NoVarOps[X](l:Linx[Unit, X]) = new NoVarOps[X](l)
@@ -55,26 +80,6 @@ sealed trait Linx[A, X] {
 
   def template(render:String => String):String =
     templates(render).head
-
-  def expandToURI(base: URI, render: String => String): URI = {
-    val addPath = template(render)
-    val scheme = Option(base.getScheme)
-    val host = Option(base.getHost)
-    val port = Option(base.getPort).filterNot(Set(0, -1).contains)
-    val path = Option(base.getPath)
-    val query = Option(base.getQuery)
-    val fragment = Option(base.getFragment)
-
-    URI.create(List(
-      scheme.map(_ + "://"),
-      host,
-      port.map(p => s":$p"),
-      path.map(s => if (s.endsWith("/")) s.stripSuffix("/") else s),
-      Some(addPath),
-      query.map("?" + _),
-      fragment.map("#" + _)
-    ).flatten.mkString)
-  }
 
   // rfc6570 uri template
   override def toString = template("{" + _ + "}")
