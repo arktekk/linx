@@ -198,4 +198,20 @@ class LinxTest extends FunSuite {
 
     assert(base.resolve("/context/foo/bar/baz") === link.uri(base))
   }
+
+  test("Parameterized") {
+    val link = Root / "foo" / "bar" / 'baz
+
+    val base = URI.create("/context")
+
+    assert(base.resolve("/context/foo/bar/baz") === link.uri(base, "baz"))
+  }
+
+  test("Parameterized multiple") {
+    val link = Root / "foo" / "bar" / 'baz / 'meh
+
+    val base = URI.create("/context")
+
+    assert(base.resolve("/context/foo/bar/baz/meh") === link.uri(base, ("baz", "meh")))
+  }
 }
