@@ -1,6 +1,6 @@
 import com.typesafe.sbt.pgp.PgpKeys
 
-crossScalaVersions  := Seq("2.12.1", "2.11.8", "2.10.6")
+crossScalaVersions  := Seq("2.12.6", "2.11.12")
 scalaVersion        := crossScalaVersions.value.head
 scalacOptions      ++= Seq("-feature", "-deprecation", "-encoding", "utf-8")
 
@@ -8,11 +8,10 @@ scalacOptions      ++= Seq("-feature", "-deprecation", "-encoding", "utf-8")
 isSnapshot in ThisBuild := true
 
 publishTo in ThisBuild := {
-  val nexus = "https://oss.sonatype.org/"
-  if ((version in ThisBuild).value.trim.endsWith("SNAPSHOT"))
-    Some("snapshots" at nexus + "content/repositories/snapshots")
+  if ((isSnapshot in ThisBuild).value)
+    Some(Opts.resolver.sonatypeSnapshots)
   else
-    Some("releases" at nexus + "service/local/staging/deploy/maven2")
+    Some(Opts.resolver.sonatypeStaging)
 }
 
 val noPublishSettings: Project => Project =
@@ -28,18 +27,16 @@ val publishSettings: Project => Project =
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-    pomExtra :=
-      <scm>
-        <url>git@github.com:arktekk/linx.git</url>
-        <connection>scm:git:git@github.com:arktekk/linx.git</connection>
-      </scm>
-      <developers>
-        <developer>
-          <id>jteigen</id>
-          <name>Jon-Anders Teigen</name>
-          <url>http://jteigen.com</url>
-        </developer>
-      </developers>
+    scmInfo := Some(ScmInfo(
+      new URL("https://github.com/arktekk/linx"),
+      "scm:git:git@github.com:arktekk/linx.git"
+    )),
+    developers += Developer(
+      "jteigen",
+      "Jon-Anders Teigen",
+      null,
+      new URL("http://jteigen.com")
+    )
   )
 
 lazy val linx =
@@ -51,7 +48,7 @@ lazy val linx =
       description         := "A simple and typesafe link representation",
       homepage            := Some(url("http://github.com/arktekk/linx")),
       licenses            := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.1" % Test
+      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.5" % Test
     ).configureAll(publishSettings)
 
 lazy val linxJVM = linx.jvm
