@@ -70,6 +70,8 @@ sealed trait Linx[A, X] {
 
   def unapply(s:String):X
 
+  def matches(s: String): Boolean
+
   def parts:Stream[Vector[Part]]
 
   def templates(render:String => String):Stream[String] =
@@ -95,6 +97,8 @@ class StaticLinx (val static:Vector[String]) extends Linx[Unit, Boolean]{
   def extract(seq: List[String]) =
     if (seq.startsWith(static)) Stream(((), seq.drop(static.size))) else Stream.empty
 
+  override def matches(s: String): Boolean = unapply(s)
+
   def parts = Stream(static.map(Literal))
 }
 
@@ -113,6 +117,8 @@ class VariableLinx[P, A] (parent:Linx[P, _], param:LinxParam[P, A], static:Vecto
 
   def unapply(s:String) = (for { (a, Nil) <- extract(split(s)) } yield a).headOption
 
+  override def matches(s: String): Boolean = unapply(s).isDefined
+
   def parts = parent.parts.map(_ ++ (Var(symbol.name) +: static.map(Literal)))
 }
 
@@ -129,14 +135,16 @@ class UnionLinx[A, X] (first:Linx[A, X], next:Linx[A, X], matcher:UnapplyMatch[X
     if(matcher.is(firstX)) firstX else next.unapply(s)
   }
 
+  override def matches(s: String): Boolean = matcher.is(unapply(s))
+
   def parts = first.parts #::: next.parts
 }
 
 sealed case class UnapplyMatch[X](is:X => Boolean)
 
 object UnapplyMatch {
-  implicit val boolean = UnapplyMatch[Boolean](identity)
-  implicit def option[A] = UnapplyMatch[Option[A]](_.isDefined)
+  implicit val boolean: UnapplyMatch[Boolean] = UnapplyMatch[Boolean](identity)
+  implicit def option[A]: UnapplyMatch[Option[A]] = UnapplyMatch[Option[A]](_.isDefined)
 }
 
 sealed case class LinxParam[A, B](previous:B => (A, String), next:(A, String) => B)
