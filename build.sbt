@@ -1,6 +1,6 @@
 import com.typesafe.sbt.pgp.PgpKeys
 
-crossScalaVersions  := Seq("2.12.6", "2.11.12")
+crossScalaVersions  := Seq("2.13.0", "2.12.6", "2.11.12")
 scalaVersion        := crossScalaVersions.value.head
 scalacOptions      ++= Seq("-feature", "-deprecation", "-encoding", "utf-8")
 
@@ -48,7 +48,7 @@ lazy val linx =
       description         := "A simple and typesafe link representation",
       homepage            := Some(url("http://github.com/arktekk/linx")),
       licenses            := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.5" % Test
+      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.8" % Test
     ).configureAll(publishSettings)
 
 lazy val linxJVM = linx.jvm
