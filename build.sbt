@@ -1,6 +1,7 @@
 import com.typesafe.sbt.pgp.PgpKeys
+import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
-crossScalaVersions  := Seq("2.13.0", "2.12.6", "2.11.12")
+crossScalaVersions  := Seq("2.13.0", "2.12.8", "2.11.12")
 scalaVersion        := crossScalaVersions.value.head
 scalacOptions      ++= Seq("-feature", "-deprecation", "-encoding", "utf-8")
 
@@ -40,7 +41,8 @@ val publishSettings: Project => Project =
   )
 
 lazy val linx =
-  crossProject
+  crossProject(JSPlatform, JVMPlatform)
+    .withoutSuffixFor(JVMPlatform)
     .in(file("."))
     .settings(
       organization        := "no.arktekk",
@@ -49,7 +51,7 @@ lazy val linx =
       homepage            := Some(url("http://github.com/arktekk/linx")),
       licenses            := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
       libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.8" % Test
-    ).configureAll(publishSettings)
+    ).configure(publishSettings)
 
 lazy val linxJVM = linx.jvm
 lazy val linxJS  = linx.js
